@@ -21,6 +21,11 @@ const FundSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    eligibilityCriteria: {
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   { timestamps: true } // ✅ Adds createdAt & updatedAt automatically
 );

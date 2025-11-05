@@ -50,15 +50,25 @@ export async function getSchemeCount() {
   return await contract.getSchemeCount();
 }
 
-// ✅ 6️⃣ Get all schemes (for ViewSchemes.js)
+// ✅ 6️⃣ Get all schemes (for ViewSchemes.js) - Note: now using backend API instead
 export async function getSchemes() {
   if (!contract) await initBlockchain();
-  const count = await contract.getSchemeCount();
+  const count = Number(await contract.schemeCount());
   const schemes = [];
 
-  for (let i = 0; i < count; i++) {
-    const scheme = await contract.getScheme(i);
-    schemes.push(scheme);
+  // Schemes are stored starting from index 1 (contract increments schemeCount first)
+  for (let i = 1; i <= count; i++) {
+    try {
+      const scheme = await contract.getScheme(i);
+      schemes.push({
+        id: Number(scheme.id.toString()),
+        name: scheme.name,
+        totalFunds: Number(scheme.totalFunds.toString()),
+        usedFunds: Number(scheme.usedFunds.toString()),
+      });
+    } catch (err) {
+      console.warn(`Failed to fetch scheme ${i}`, err);
+    }
   }
 
   return schemes;

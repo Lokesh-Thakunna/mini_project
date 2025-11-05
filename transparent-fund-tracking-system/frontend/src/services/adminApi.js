@@ -12,12 +12,16 @@ export async function fetchSchemes() {
   return res.data;
 }
 
-export async function addScheme(name, amount) {
-  const res = await axios.post(`${API_BASE}/add-scheme`, { name, amount });
+export async function addScheme(name, amount, eligibilityCriteria = "") {
+  const res = await axios.post(`${API_BASE}/add-scheme`, { 
+    name, 
+    amount, 
+    eligibilityCriteria 
+  });
   return res.data;
 }
 
-export async function useFund(schemeId, amount, executor, purpose) {
+export async function executeUseFund(schemeId, amount, executor, purpose) {
   const res = await axios.post(`${API_BASE}/use-fund`, { schemeId, amount, executor, purpose });
   return res.data;
 }
