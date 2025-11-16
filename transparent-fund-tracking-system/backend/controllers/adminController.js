@@ -254,8 +254,11 @@ exports.useFund = async (req, res) => {
       tx = await contract.useFund(schemeId, amountBigInt);
       console.log(`⏳ Waiting for transaction: ${tx.hash}`);
       receipt = await tx.wait();
-      txHash = receipt.transactionHash;
+      txHash = receipt.transactionHash || tx.hash || null;
       blockchainSuccess = true;
+      if (!txHash) {
+        throw new Error('Transaction hash not found in receipt');
+      }
       console.log(`✅ Transaction confirmed: ${txHash}`);
     } catch (blockchainErr) {
       console.error('❌ Blockchain error:', blockchainErr.message);
@@ -289,6 +292,12 @@ exports.useFund = async (req, res) => {
 
     // Record transaction and update DB if possible
     if (mongoose.connection.readyState === 1) {
+      // Ensure txHash is always set (safeguard against edge cases)
+      if (!txHash || (typeof txHash === 'string' && txHash.trim() === '')) {
+        txHash = `db_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        console.log(`⚠️ txHash was missing or empty, generating mock txHash: ${txHash}`);
+      }
+      
       // Check if transaction already exists (prevent duplicates)
       const existingTx = await Transaction.findOne({ txHash });
       if (!existingTx) {

@@ -52,6 +52,19 @@ const AdminDashboard = () => {
           >
             Transaction History
           </NavLink>
+          <div className="pt-4 mt-4 border-t border-gray-200">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2 px-4">
+              Fund Utilization
+            </h3>
+            <NavLink
+              to="/admin/dashboard/manage-requests"
+              className={({ isActive }) =>
+                `${linkClass} ${isActive ? activeClass : "text-gray-700"}`
+              }
+            >
+              ⚙️ Manage Requests
+            </NavLink>
+          </div>
         </nav>
         
         {/* Logout Button */}

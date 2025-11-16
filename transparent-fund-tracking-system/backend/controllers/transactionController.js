@@ -5,12 +5,19 @@ exports.addTransaction = async (req, res) => {
   try {
     const { schemeId, amount, purpose, executor, txHash } = req.body;
 
+    // Generate mock txHash if not provided or empty
+    let finalTxHash = txHash;
+    if (!finalTxHash || (typeof finalTxHash === 'string' && finalTxHash.trim() === '')) {
+      finalTxHash = `db_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      console.log(`⚠️ txHash not provided or empty, generating mock txHash: ${finalTxHash}`);
+    }
+
     const newTx = new Transaction({
       schemeId,
       amount,
       purpose,
       executor,
-      txHash,
+      txHash: finalTxHash,
     });
 
     await newTx.save();
