@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken } from "./authApi";
 
-const API_BASE = "http://localhost:5000/api/utilization";
+const API_BASE = `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/utilization`;
 
 // Create axios instance with auth interceptor
 const api = axios.create({
@@ -32,11 +32,7 @@ api.interceptors.response.use(
 
 // Submit fund utilization request with supporting documentation
 export async function submitUtilizationRequest(formData) {
-  const res = await api.post("/request", formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
+  const res = await api.post("/request", formData);
   return res.data;
 }
 
@@ -70,11 +66,7 @@ export async function rejectRequest(id, rejectionReason, rejectedBy) {
 
 // Record expenditure against request
 export async function recordExpenditure(id, formData) {
-  const res = await api.post(`/requests/${id}/expenditure`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
+  const res = await api.post(`/requests/${id}/expenditure`, formData);
   return res.data;
 }
 
@@ -86,11 +78,7 @@ export async function fetchExpenditures(id) {
 
 // Upload proof of work completion
 export async function uploadProof(id, formData) {
-  const res = await api.post(`/requests/${id}/proof`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
+  const res = await api.post(`/requests/${id}/proof`, formData);
   return res.data;
 }
 

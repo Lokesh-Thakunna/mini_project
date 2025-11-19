@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { submitGrievance } from "../../services/publicApi";
 import { fetchPublicSchemes } from "../../services/publicApi";
+import { usePublicAuth } from "../../context/PublicAuthContext";
 
 const GrievanceSubmission = () => {
+  const { user } = usePublicAuth();
   const [formData, setFormData] = useState({
     schemeId: "",
     schemeName: "",
@@ -13,7 +15,7 @@ const GrievanceSubmission = () => {
     beneficiaryName: "",
     contactEmail: "",
     contactPhone: "",
-    submittedBy: "anonymous"
+    submittedBy: user?.email || "anonymous"
   });
   const [documents, setDocuments] = useState([]);
   const [schemes, setSchemes] = useState([]);
@@ -31,6 +33,17 @@ const GrievanceSubmission = () => {
     };
     loadSchemes();
   }, []);
+
+  // Update submittedBy when user changes
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({
+        ...prev,
+        submittedBy: user.email,
+        contactEmail: prev.contactEmail || user.email
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

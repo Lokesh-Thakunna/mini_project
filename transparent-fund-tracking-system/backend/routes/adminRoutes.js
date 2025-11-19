@@ -14,4 +14,8 @@ router.post('/add-scheme', adminController.addScheme);
 // Use fund (blockchain + db + transaction record)
 router.post('/use-fund', adminController.useFund);
 
+// Grievance management
+router.get('/grievances', adminController.getAllGrievances);
+router.put('/grievances/:grievanceId', adminController.updateGrievanceStatus);
+
 module.exports = router;

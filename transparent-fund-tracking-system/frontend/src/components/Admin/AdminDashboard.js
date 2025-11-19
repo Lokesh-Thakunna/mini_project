@@ -52,6 +52,14 @@ const AdminDashboard = () => {
           >
             Transaction History
           </NavLink>
+          <NavLink
+            to="/admin/dashboard/grievance-reports"
+            className={({ isActive }) =>
+              `${linkClass} ${isActive ? activeClass : "text-gray-700"}`
+            }
+          >
+            📝 Grievance Reports
+          </NavLink>
           <div className="pt-4 mt-4 border-t border-gray-200">
             <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2 px-4">
               Fund Utilization

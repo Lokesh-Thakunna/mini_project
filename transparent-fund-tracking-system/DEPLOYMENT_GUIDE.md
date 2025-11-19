@@ -40,19 +40,27 @@ Create or update `backend/.env` file:
 ```env
 # MongoDB Connection
 MONGO_URI=mongodb://localhost:27017/fundtracker
+# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/fundtracker
+
+# Server Port
+PORT=5000
+
+# JWT Secret (Change this to a secure random string in production)
+JWT_SECRET=your-secret-key-change-in-production
 
 # Blockchain Configuration
 RPC_URL=http://127.0.0.1:8545
 PRIVATE_KEY=<paste_the_first_account_private_key_from_hardhat_node>
 CONTRACT_ADDRESS=<paste_the_deployed_contract_address>
 
-# Server Port
-PORT=5000
+# Frontend URL (for CORS - optional, defaults to http://localhost:3000)
+FRONTEND_URL=http://localhost:3000
 ```
 
 **Important**: 
 - Use the first account's private key from Hardhat node (this account is the admin)
 - Use the contract address from deployment step
+- Change JWT_SECRET to a secure random string in production
 
 ### 4. Start Backend Server
 
@@ -68,7 +76,19 @@ npm install -g nodemon
 nodemon server.js
 ```
 
-### 5. Start Frontend
+### 5. Configure Frontend Environment
+
+Create or update `frontend/.env` file:
+
+```env
+# Backend API URL
+REACT_APP_API_URL=http://localhost:5000
+
+# Smart Contract Address (same as CONTRACT_ADDRESS in backend/.env)
+REACT_APP_CONTRACT_ADDRESS=<paste_the_deployed_contract_address>
+```
+
+### 6. Start Frontend
 
 Open a new terminal:
 
@@ -130,9 +150,39 @@ This means the contract is not deployed or the address is wrong:
 
 For production, you'll need:
 
-1. A production blockchain network (like Sepolia, Mumbai, etc.)
-2. Update `RPC_URL` to your production RPC endpoint
-3. Deploy contract to production network
-4. Update `CONTRACT_ADDRESS` with production address
-5. Use a secure wallet for production (never expose private keys)
+1. **Backend Environment Variables** (`backend/.env`):
+   - Set `MONGO_URI` to your production MongoDB (Atlas recommended)
+   - Set `JWT_SECRET` to a strong, random secret key
+   - Set `RPC_URL` to your production blockchain RPC endpoint (e.g., Sepolia, Mumbai, Mainnet)
+   - Set `PRIVATE_KEY` to your production wallet private key (keep secure!)
+   - Set `CONTRACT_ADDRESS` to your production contract address
+   - Set `FRONTEND_URL` to your production frontend URL (for CORS)
+   - Set `PORT` to your production port (or let hosting platform set it)
+
+2. **Frontend Environment Variables** (`frontend/.env`):
+   - Set `REACT_APP_API_URL` to your production backend URL
+   - Set `REACT_APP_CONTRACT_ADDRESS` to your production contract address
+
+3. **Deploy Contract**:
+   - Deploy contract to production network (Sepolia, Mumbai, etc.)
+   - Update `CONTRACT_ADDRESS` in both backend and frontend `.env` files
+
+4. **Build Frontend**:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+   Deploy the `build` folder to your hosting service (Vercel, Netlify, etc.)
+
+5. **Deploy Backend**:
+   - Deploy to hosting service (Heroku, Railway, Render, etc.)
+   - Make sure to set all environment variables in your hosting platform
+   - Ensure uploads directory has write permissions
+
+6. **Security Notes**:
+   - Never commit `.env` files to version control
+   - Use environment variables in your hosting platform
+   - Use a secure wallet for production (never expose private keys)
+   - Use HTTPS in production
+   - Set strong JWT_SECRET
 

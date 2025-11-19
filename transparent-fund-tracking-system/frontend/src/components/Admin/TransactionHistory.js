@@ -16,7 +16,8 @@ const TransactionHistory = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/transactions");
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const res = await axios.get(`${apiUrl}/api/transactions`);
       setTransactions(res.data);
       setError("");
     } catch (error) {

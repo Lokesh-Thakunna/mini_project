@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api/public";
+const API_BASE = `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/public`;
 
 // Get all active schemes with budgets
 export async function fetchPublicSchemes(filters = {}) {

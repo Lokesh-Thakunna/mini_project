@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import FundTrackerABI from "../FundTrackerABI.json"; // ✅ make sure this file is in src/
  
 let contract;
-const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // your deployed address
+const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // your deployed address
 
 // ✅ 1️⃣ Initialize connection to MetaMask + Smart Contract
 export async function initBlockchain() {

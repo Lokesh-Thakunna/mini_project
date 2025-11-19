@@ -1,6 +1,7 @@
 const getContract = require('../utils/contract');
 const Fund = require('../models/Fund');
 const Transaction = require('../models/Transaction');
+const Grievance = require('../models/Grievance');
 const mongoose = require('mongoose');
 
 // Get aggregated stats (DB + blockchain sync)
@@ -354,6 +355,89 @@ exports.useFund = async (req, res) => {
   } catch (err) {
     console.error('Error using fund', err);
     res.status(500).json({ message: err.message || 'Server Error', error: err.toString() });
+  }
+};
+
+// Get all grievances (admin access)
+exports.getAllGrievances = async (req, res) => {
+  try {
+    const { status, category, search, submittedBy } = req.query;
+    let filter = {};
+
+    // Filter by status
+    if (status) {
+      filter.status = status;
+    }
+
+    // Filter by category
+    if (category) {
+      filter.category = category;
+    }
+
+    // Filter by submittedBy
+    if (submittedBy) {
+      filter.submittedBy = submittedBy;
+    }
+
+    // Search in title, description, or grievanceId
+    if (search) {
+      filter.$or = [
+        { title: new RegExp(search, 'i') },
+        { description: new RegExp(search, 'i') },
+        { grievanceId: new RegExp(search, 'i') },
+        { schemeName: new RegExp(search, 'i') }
+      ];
+    }
+
+    const grievances = await Grievance.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(1000);
+
+    res.json(grievances);
+  } catch (error) {
+    console.error('Error fetching grievances:', error);
+    res.status(500).json({ message: 'Failed to fetch grievances', error: error.message });
+  }
+};
+
+// Update grievance status (admin action)
+exports.updateGrievanceStatus = async (req, res) => {
+  try {
+    const { grievanceId } = req.params;
+    const { status, reviewNotes, reviewedBy } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+
+    const validStatuses = ['pending', 'under-review', 'resolved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+    }
+
+    const grievance = await Grievance.findOne({ grievanceId });
+    if (!grievance) {
+      return res.status(404).json({ message: 'Grievance not found' });
+    }
+
+    grievance.status = status;
+    if (reviewNotes) {
+      grievance.reviewNotes = reviewNotes;
+    }
+    if (reviewedBy) {
+      grievance.reviewedBy = reviewedBy;
+    }
+    grievance.reviewedAt = new Date();
+
+    await grievance.save();
+
+    res.json({ 
+      message: 'Grievance status updated successfully', 
+      grievance 
+    });
+  } catch (error) {
+    console.error('Error updating grievance status:', error);
+    res.status(500).json({ message: 'Failed to update grievance status', error: error.message });
   }
 };
 

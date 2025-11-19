@@ -223,7 +223,8 @@ const UtilizationRequestDetail = () => {
 
   const getFileUrl = (filePath) => {
     if (!filePath) return null;
-    return `http://localhost:5000/${filePath}`;
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    return `${apiUrl}/${filePath}`;
   };
 
   return (

@@ -4,17 +4,17 @@ const API_BASE = `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/ap
 
 // Get token from localStorage
 const getToken = () => {
-  return localStorage.getItem("utilization_token");
+  return localStorage.getItem("public_token");
 };
 
 // Set token in localStorage
 const setToken = (token) => {
-  localStorage.setItem("utilization_token", token);
+  localStorage.setItem("public_token", token);
 };
 
 // Remove token from localStorage
 const removeToken = () => {
-  localStorage.removeItem("utilization_token");
+  localStorage.removeItem("public_token");
 };
 
 // Create axios instance with auth header
@@ -31,9 +31,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Sign up new user
+// Sign up new public user
 export async function signup(userData) {
-  const res = await axios.post(`${API_BASE}/signup`, userData);
+  const res = await axios.post(`${API_BASE}/signup`, {
+    ...userData,
+    role: "public"
+  });
   if (res.data.token) {
     setToken(res.data.token);
   }

@@ -11,12 +11,19 @@ const generateToken = (userId) => {
 // Sign up new user
 exports.signup = async (req, res) => {
   try {
-    const { email, password, fullName, organization, designation, phone, address } = req.body;
+    const { email, password, fullName, organization, designation, phone, address, role } = req.body;
 
-    // Validation
-    if (!email || !password || !fullName || !organization) {
+    // Validation - organization is required for agency role, optional for public
+    const isPublicUser = role === "public";
+    if (!email || !password || !fullName) {
       return res.status(400).json({ 
-        message: "Missing required fields: email, password, fullName, and organization are required" 
+        message: "Missing required fields: email, password, and fullName are required" 
+      });
+    }
+
+    if (!isPublicUser && !organization) {
+      return res.status(400).json({ 
+        message: "Organization is required for agency users" 
       });
     }
 
@@ -39,11 +46,11 @@ exports.signup = async (req, res) => {
       email: email.toLowerCase(),
       password,
       fullName,
-      organization,
+      organization: organization || (isPublicUser ? "Public User" : ""),
       designation: designation || "",
       phone: phone || "",
       address: address || "",
-      role: "agency",
+      role: role || "agency",
     });
 
     await user.save();

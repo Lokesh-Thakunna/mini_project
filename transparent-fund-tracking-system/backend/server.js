@@ -6,8 +6,17 @@ const path = require("path");
 
 dotenv.config();
 
+const DEFAULT_MONGO_URI = "mongodb://127.0.0.1:27017/fundtracker";
+
 const app = express();
-app.use(cors());
+
+// CORS configuration - allow requests from frontend
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Serve static files from uploads directory
@@ -31,41 +40,87 @@ app.use("/api/auth", authRoutes);
 // ✅ MongoDB connection
 mongoose.set("strictQuery", true);
 
-// Ensure database name is in connection string
-let mongoUri = process.env.MONGO_URI;
-if (!mongoUri) {
-  console.error("❌ MONGO_URI is not set in .env file!");
-  console.log("Please set MONGO_URI in backend/.env");
-} else {
-  // If using MongoDB Atlas and database name is missing, add it
-  if (mongoUri.includes('mongodb+srv://') && !mongoUri.includes('/fundtracker')) {
-    mongoUri = mongoUri.replace(/\?/, '/fundtracker?');
-    if (!mongoUri.includes('?')) {
-      mongoUri += '?retryWrites=true&w=majority';
-    }
-  }
-  // If using local MongoDB and database name is missing, add it
-  else if (mongoUri.includes('mongodb://') && !mongoUri.split('/').slice(-1)[0].includes('?')) {
-    if (!mongoUri.endsWith('/fundtracker') && !mongoUri.includes('/fundtracker')) {
-      mongoUri = mongoUri.replace(/\/$/, '') + '/fundtracker';
-    }
+const normalizeMongoUri = (rawUri) => {
+  const fallback = DEFAULT_MONGO_URI;
+  if (!rawUri || !rawUri.trim()) {
+    console.warn("⚠️ MONGO_URI is missing. Falling back to default local MongoDB.");
+    return fallback;
   }
 
-  mongoose
-    .connect(mongoUri)
-    .then(() => {
-      console.log("✅ MongoDB Connected Successfully");
-      console.log("📊 Database:", mongoose.connection.db.databaseName);
-    })
-    .catch((err) => {
-      console.error("❌ MongoDB Connection Error:", err.message);
-      console.log("\nTroubleshooting:");
-      console.log("1. Check if MongoDB is running");
-      console.log("2. Verify MONGO_URI in backend/.env");
-      console.log("3. For Atlas: Make sure database name is included");
-      console.log("4. Example: mongodb+srv://user:pass@cluster.mongodb.net/fundtracker");
-    });
-}
+  let value = rawUri.trim();
+
+  // Allow users to pass just a database name or path (e.g., "fundtracker" or "/fundtracker")
+  const hasMongoProtocol =
+    value.startsWith("mongodb://") || value.startsWith("mongodb+srv://");
+  if (!hasMongoProtocol) {
+    const sanitizedDb = value.replace(/^\/+/, "") || "fundtracker";
+    const finalUri = `mongodb://127.0.0.1:27017/${sanitizedDb}`;
+    console.warn(
+      `⚠️ MONGO_URI did not include a protocol/host. Using local MongoDB: ${finalUri}`
+    );
+    return finalUri;
+  }
+
+  try {
+    const parsed = new URL(value);
+    const isSrv = parsed.protocol === "mongodb+srv:";
+
+    if (!parsed.hostname) {
+      if (isSrv) {
+        console.warn(
+          "⚠️ MONGO_URI (mongodb+srv) is missing a hostname. Falling back to default local MongoDB."
+        );
+        return fallback;
+      }
+      parsed.hostname = "127.0.0.1";
+      if (!parsed.port) {
+        parsed.port = "27017";
+      }
+    }
+
+    if (!isSrv && !parsed.port) {
+      parsed.port = "27017";
+    }
+
+    const currentPath = parsed.pathname || "/";
+    if (currentPath === "/" || currentPath === "") {
+      parsed.pathname = "/fundtracker";
+    } else {
+      parsed.pathname = `/${currentPath.replace(/^\/+/, "")}`;
+    }
+
+    return parsed.toString();
+  } catch (err) {
+    console.warn(
+      `⚠️ MONGO_URI "${value}" is invalid (${err.message}). Falling back to default local MongoDB.`
+    );
+    return fallback;
+  }
+};
+
+let mongoUri = normalizeMongoUri(process.env.MONGO_URI);
+
+mongoose
+  .connect(mongoUri)
+  .then(() => {
+    console.log("✅ MongoDB Connected Successfully");
+    console.log("📊 Database:", mongoose.connection.db.databaseName);
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    console.log("\nTroubleshooting:");
+    console.log("1. Check if MongoDB is running");
+    console.log("2. Verify MONGO_URI in backend/.env");
+    console.log("3. For Atlas: Make sure database name is included");
+    console.log("4. Example: mongodb+srv://user:pass@cluster.mongodb.net/fundtracker");
+  });
+  const frontendPath = path.join(__dirname, "frontend", "build");
+
+  app.use(express.static(frontendPath));
+
+  app.get("*", (req, res) => {
+     res.sendFile(path.join(frontendPath, "index.html"));
+  });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

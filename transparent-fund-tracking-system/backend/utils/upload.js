@@ -2,15 +2,22 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure upload directories exist
+// Ensure upload directories exist (using absolute paths)
+const baseUploadDir = path.join(__dirname, '..', 'uploads');
 const uploadDirs = {
-  supportingDocs: 'uploads/supporting-docs',
-  expenditureBills: 'uploads/expenditure-bills',
-  proofs: 'uploads/proofs',
-  certificates: 'uploads/certificates',
-  grievances: 'uploads/grievances'
+  supportingDocs: path.join(baseUploadDir, 'supporting-docs'),
+  expenditureBills: path.join(baseUploadDir, 'expenditure-bills'),
+  proofs: path.join(baseUploadDir, 'proofs'),
+  certificates: path.join(baseUploadDir, 'certificates'),
+  grievances: path.join(baseUploadDir, 'grievances')
 };
 
+// Create base upload directory if it doesn't exist
+if (!fs.existsSync(baseUploadDir)) {
+  fs.mkdirSync(baseUploadDir, { recursive: true });
+}
+
+// Create subdirectories
 Object.values(uploadDirs).forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -20,7 +27,7 @@ Object.values(uploadDirs).forEach(dir => {
 // Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let uploadPath = 'uploads/';
+    let uploadPath = uploadDirs.supportingDocs; // Default
     const routePath = req.route?.path || req.url || '';
     
     // Determine upload directory based on route or field name
@@ -31,17 +38,9 @@ const storage = multer.diskStorage({
     } else if (routePath.includes('expenditure') || file.fieldname === 'bill') {
       uploadPath = uploadDirs.expenditureBills;
     } else if (routePath.includes('proof') || file.fieldname === 'file') {
-      // Check if it's a proof upload based on URL
-      if (routePath.includes('/proof')) {
-        uploadPath = uploadDirs.proofs;
-      } else {
-        uploadPath = uploadDirs.proofs; // Default to proofs for file uploads
-      }
+      uploadPath = uploadDirs.proofs;
     } else if (routePath.includes('certificate')) {
       uploadPath = uploadDirs.certificates;
-    } else {
-      // Default to supporting docs
-      uploadPath = uploadDirs.supportingDocs;
     }
     
     cb(null, uploadPath);

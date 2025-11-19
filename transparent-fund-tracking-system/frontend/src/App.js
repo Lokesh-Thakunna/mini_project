@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { UtilizationAuthProvider } from "./context/UtilizationAuthContext";
+import { PublicAuthProvider } from "./context/PublicAuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedUtilizationRoute from "./components/Utilization/ProtectedUtilizationRoute";
 import AdminLogin from "./components/Admin/AdminLogin";
@@ -11,6 +12,7 @@ import UseFund from "./components/Admin/UseFund";
 import ViewSchemes from "./components/Admin/ViewSchemes";
 import TransactionHistory from "./components/Admin/TransactionHistory";
 import ManageUtilizationRequests from "./components/Admin/ManageUtilizationRequests";
+import GrievanceReports from "./components/Admin/GrievanceReports";
 import UtilizationDashboard from "./components/Utilization/UtilizationDashboard";
 import UtilizationRequestsList from "./components/Utilization/UtilizationRequestsList";
 import FundUtilizationRequestForm from "./components/Utilization/FundUtilizationRequestForm";
@@ -22,6 +24,10 @@ import SchemesView from "./components/Public/SchemesView";
 import PublicTransactionHistory from "./components/Public/PublicTransactionHistory";
 import GrievanceSubmission from "./components/Public/GrievanceSubmission";
 import ReportDownload from "./components/Public/ReportDownload";
+import PublicSignIn from "./components/Public/PublicSignIn";
+import PublicSignUp from "./components/Public/PublicSignUp";
+import MyGrievances from "./components/Public/MyGrievances";
+import ProtectedPublicRoute from "./components/Public/ProtectedPublicRoute";
 
 const App = () => {
   return (
@@ -68,6 +74,7 @@ const App = () => {
               <Route path="view-schemes" element={<ViewSchemes />} />
               <Route path="transactions" element={<TransactionHistory />} />
               <Route path="manage-requests" element={<ManageUtilizationRequests />} />
+              <Route path="grievance-reports" element={<GrievanceReports />} />
             </Route>
 
             {/* Fund Utilization Module (Module 2) - For Implementing Agencies - Authentication Required */}
@@ -120,20 +127,41 @@ const App = () => {
               />
             </Route>
 
-            {/* Public Transparency Module (Module 3) - For Citizens - No Authentication Required */}
+            {/* Public Transparency Module (Module 3) - For Citizens - Authentication Required for Some Features */}
             <Route
               path="/public/*"
               element={
-                <div className="p-6">
-                  <PublicDashboard />
-                </div>
+                <PublicAuthProvider>
+                  <div className="p-6">
+                    <PublicDashboard />
+                  </div>
+                </PublicAuthProvider>
               }
             >
               <Route index element={<Navigate to="/public/schemes" replace />} />
               <Route path="schemes" element={<SchemesView />} />
               <Route path="transactions" element={<PublicTransactionHistory />} />
-              <Route path="grievance" element={<GrievanceSubmission />} />
               <Route path="reports" element={<ReportDownload />} />
+              {/* Auth routes */}
+              <Route path="signin" element={<PublicSignIn />} />
+              <Route path="signup" element={<PublicSignUp />} />
+              {/* Protected routes */}
+              <Route
+                path="grievance"
+                element={
+                  <ProtectedPublicRoute>
+                    <GrievanceSubmission />
+                  </ProtectedPublicRoute>
+                }
+              />
+              <Route
+                path="my-grievances"
+                element={
+                  <ProtectedPublicRoute>
+                    <MyGrievances />
+                  </ProtectedPublicRoute>
+                }
+              />
             </Route>
 
             {/* Home route */}
