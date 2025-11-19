@@ -10,95 +10,71 @@ const DEFAULT_MONGO_URI = "mongodb://127.0.0.1:27017/fundtracker";
 
 const app = express();
 
-// CORS configuration - allow requests from frontend
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+// -------------------------------------------
+// CORS CONFIG (Netlify + Localhost)
+// -------------------------------------------
+app.use(
+  cors({
+    origin: [
+      "https://stalwart-profiterole-2fea66.netlify.app", // Your Netlify frontend
+      "http://localhost:3000" // Local development
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
 app.use(express.json());
 
-// Serve static files from uploads directory
+// -------------------------------------------
+// Static Uploads
+// -------------------------------------------
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Routes
-const fundRoutes = require("./routes/fund");
-const transactionRoutes = require("./routes/transactionRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const utilizationRoutes = require("./routes/utilizationRoutes");
-const publicRoutes = require("./routes/publicRoutes");
-const authRoutes = require("./routes/authRoutes");
+// -------------------------------------------
+// API ROUTES
+// -------------------------------------------
+app.use("/api/fund", require("./routes/fund"));
+app.use("/api/transactions", require("./routes/transactionRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/utilization", require("./routes/utilizationRoutes"));
+app.use("/api/public", require("./routes/publicRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
-app.use("/api/fund", fundRoutes);
-app.use("/api/transactions", transactionRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/utilization", utilizationRoutes);
-app.use("/api/public", publicRoutes);
-app.use("/api/auth", authRoutes);
-
-// ✅ MongoDB connection
+// -------------------------------------------
+// MongoDB NORMALIZED CONNECTION
+// -------------------------------------------
 mongoose.set("strictQuery", true);
 
 const normalizeMongoUri = (rawUri) => {
   const fallback = DEFAULT_MONGO_URI;
+
   if (!rawUri || !rawUri.trim()) {
-    console.warn("⚠️ MONGO_URI is missing. Falling back to default local MongoDB.");
+    console.warn("⚠️ Missing MONGO_URI → Using local MongoDB.");
     return fallback;
   }
 
   let value = rawUri.trim();
 
-  // Allow users to pass just a database name or path (e.g., "fundtracker" or "/fundtracker")
-  const hasMongoProtocol =
-    value.startsWith("mongodb://") || value.startsWith("mongodb+srv://");
-  if (!hasMongoProtocol) {
-    const sanitizedDb = value.replace(/^\/+/, "") || "fundtracker";
-    const finalUri = `mongodb://127.0.0.1:27017/${sanitizedDb}`;
-    console.warn(
-      `⚠️ MONGO_URI did not include a protocol/host. Using local MongoDB: ${finalUri}`
-    );
-    return finalUri;
+  // If user enters only DB name (example: fundtracker)
+  if (!value.startsWith("mongodb://") && !value.startsWith("mongodb+srv://")) {
+    const dbName = value.replace(/^\/+/, "") || "fundtracker";
+    return `mongodb://127.0.0.1:27017/${dbName}`;
   }
 
   try {
     const parsed = new URL(value);
-    const isSrv = parsed.protocol === "mongodb+srv:";
-
-    if (!parsed.hostname) {
-      if (isSrv) {
-        console.warn(
-          "⚠️ MONGO_URI (mongodb+srv) is missing a hostname. Falling back to default local MongoDB."
-        );
-        return fallback;
-      }
-      parsed.hostname = "127.0.0.1";
-      if (!parsed.port) {
-        parsed.port = "27017";
-      }
-    }
-
-    if (!isSrv && !parsed.port) {
-      parsed.port = "27017";
-    }
-
-    const currentPath = parsed.pathname || "/";
-    if (currentPath === "/" || currentPath === "") {
+    if (!parsed.pathname || parsed.pathname === "/") {
       parsed.pathname = "/fundtracker";
-    } else {
-      parsed.pathname = `/${currentPath.replace(/^\/+/, "")}`;
     }
-
     return parsed.toString();
   } catch (err) {
-    console.warn(
-      `⚠️ MONGO_URI "${value}" is invalid (${err.message}). Falling back to default local MongoDB.`
-    );
+    console.warn("⚠️ Invalid MONGO_URI → Using local MongoDB.");
     return fallback;
   }
 };
 
-let mongoUri = normalizeMongoUri(process.env.MONGO_URI);
+const mongoUri = normalizeMongoUri(process.env.MONGO_URI);
 
 mongoose
   .connect(mongoUri)
@@ -108,19 +84,26 @@ mongoose
   })
   .catch((err) => {
     console.error("❌ MongoDB Connection Error:", err.message);
-    console.log("\nTroubleshooting:");
-    console.log("1. Check if MongoDB is running");
-    console.log("2. Verify MONGO_URI in backend/.env");
-    console.log("3. For Atlas: Make sure database name is included");
-    console.log("4. Example: mongodb+srv://user:pass@cluster.mongodb.net/fundtracker");
-  });
-  const frontendPath = path.join(__dirname, "frontend", "build");
-
-  app.use(express.static(frontendPath));
-
-  app.get("*", (req, res) => {
-     res.sendFile(path.join(frontendPath, "index.html"));
   });
 
+// -------------------------------------------
+// REMOVE FRONTEND SERVING (Netlify handles it)
+// -------------------------------------------
+app.get("/", (req, res) => {
+  res.send("Backend API Running Successfully 🚀");
+});
+
+// -------------------------------------------
+// 404 Handler (REPLACES app.get('*'))
+// -------------------------------------------
+app.use((req, res) => {
+  res.status(404).json({ message: "API Route Not Found" });
+});
+
+// -------------------------------------------
+// START SERVER
+// -------------------------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
