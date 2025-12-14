@@ -40,6 +40,9 @@ const App = () => {
               Transparent Fund Tracker 💰
             </Link>
             <div className="space-x-2">
+              <Link to="/" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
+                🏠 Home
+              </Link>
               <Link to="/public/schemes" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
                 👁️ Public Portal
               </Link>
@@ -49,6 +52,7 @@ const App = () => {
               <Link to="/admin" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
                 🔐 Admin Portal
               </Link>
+              
             </div>
           </nav>
 
