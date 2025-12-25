@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
+
 import { AuthProvider } from "./context/AuthContext";
 import { UtilizationAuthProvider } from "./context/UtilizationAuthContext";
 import { PublicAuthProvider } from "./context/PublicAuthContext";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedUtilizationRoute from "./components/Utilization/ProtectedUtilizationRoute";
+import ProtectedPublicRoute from "./components/Public/ProtectedPublicRoute";
+
+/* ===== ADMIN ===== */
 import AdminLogin from "./components/Admin/AdminLogin";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import AddScheme from "./components/Admin/AddScheme";
@@ -13,12 +18,16 @@ import ViewSchemes from "./components/Admin/ViewSchemes";
 import TransactionHistory from "./components/Admin/TransactionHistory";
 import ManageUtilizationRequests from "./components/Admin/ManageUtilizationRequests";
 import GrievanceReports from "./components/Admin/GrievanceReports";
+
+/* ===== UTILIZATION ===== */
 import UtilizationDashboard from "./components/Utilization/UtilizationDashboard";
 import UtilizationRequestsList from "./components/Utilization/UtilizationRequestsList";
 import FundUtilizationRequestForm from "./components/Utilization/FundUtilizationRequestForm";
 import UtilizationRequestDetail from "./components/Utilization/UtilizationRequestDetail";
 import SignIn from "./components/Utilization/SignIn";
 import SignUp from "./components/Utilization/SignUp";
+
+/* ===== PUBLIC ===== */
 import PublicDashboard from "./components/Public/PublicDashboard";
 import SchemesView from "./components/Public/SchemesView";
 import PublicTransactionHistory from "./components/Public/PublicTransactionHistory";
@@ -27,46 +36,65 @@ import ReportDownload from "./components/Public/ReportDownload";
 import PublicSignIn from "./components/Public/PublicSignIn";
 import PublicSignUp from "./components/Public/PublicSignUp";
 import MyGrievances from "./components/Public/MyGrievances";
-import ProtectedPublicRoute from "./components/Public/ProtectedPublicRoute";
+
+/* ===== HOME ===== */
+import Home from "./pages/Home";
 
 const App = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-100 text-gray-900">
-          {/* Main Navigation */}
-          <nav className="bg-gradient-to-r from-blue-600 via-green-600 to-purple-600 text-white p-4 shadow-md flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold hover:opacity-80 transition">
-              Transparent Fund Tracker 💰
-            </Link>
-            <div className="space-x-2">
-              <Link to="/" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
-                🏠 Home
+
+          {/* ================= NAVBAR ================= */}
+          <nav className="bg-gradient-to-r from-blue-600 via-green-600 to-purple-600 text-white shadow-md">
+            <div className="max-w-8xl mx-auto px-6 py-6 flex justify-between items-center">
+              <Link to="/" className="text-lg sm:text-xl font-bold">
+                Transparent Fund Tracker 💰
               </Link>
-              <Link to="/public/schemes" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
-                👁️ Public Portal
-              </Link>
-              <Link to="/utilization/requests" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
-                📋 Fund Utilization
-              </Link>
-              <Link to="/admin" className="hover:underline px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition">
-                🔐 Admin Portal
-              </Link>
-              
+
+              {/* Desktop Menu */}
+              <div className="hidden md:flex space-x-3">
+                <NavLink to="/">🏠 Home</NavLink>
+                <NavLink to="/public/schemes">👁️ Public Portal</NavLink>
+                <NavLink to="/utilization/requests">📋 Fund Utilization</NavLink>
+                <NavLink to="/admin">🔐 Admin Portal</NavLink>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                className="md:hidden text-2xl"
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                ☰
+              </button>
             </div>
+
+            {/* Mobile Dropdown Menu */}
+            {menuOpen && (
+              <div className="md:hidden bg-blue-700 px-4 pb-4 space-y-2">
+                <MobileLink to="/" setMenuOpen={setMenuOpen}>🏠 Home</MobileLink>
+                <MobileLink to="/public/schemes" setMenuOpen={setMenuOpen}>👁️ Public Portal</MobileLink>
+                <MobileLink to="/utilization/requests" setMenuOpen={setMenuOpen}>📋 Fund Utilization</MobileLink>
+                <MobileLink to="/admin" setMenuOpen={setMenuOpen}>🔐 Admin Portal</MobileLink>
+              </div>
+            )}
           </nav>
 
-          {/* Main Routes */}
+          {/* ================= ROUTES ================= */}
           <Routes>
-            {/* Admin Login - Exact path match */}
+
+            <Route path="/" element={<Home />} />
+
             <Route path="/admin" element={<AdminLogin />} />
 
-            {/* Admin Dashboard and nested routes - Protected */}
             <Route
               path="/admin/dashboard/*"
               element={
                 <ProtectedRoute>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <AdminDashboard />
                   </div>
                 </ProtectedRoute>
@@ -81,22 +109,18 @@ const App = () => {
               <Route path="grievance-reports" element={<GrievanceReports />} />
             </Route>
 
-            {/* Fund Utilization Module (Module 2) - For Implementing Agencies - Authentication Required */}
             <Route
               path="/utilization/*"
               element={
                 <UtilizationAuthProvider>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <UtilizationDashboard />
                   </div>
                 </UtilizationAuthProvider>
               }
             >
-              {/* Public auth routes */}
               <Route path="signin" element={<SignIn />} />
               <Route path="signup" element={<SignUp />} />
-              
-              {/* Protected routes */}
               <Route
                 index
                 element={
@@ -131,12 +155,11 @@ const App = () => {
               />
             </Route>
 
-            {/* Public Transparency Module (Module 3) - For Citizens - Authentication Required for Some Features */}
             <Route
               path="/public/*"
               element={
                 <PublicAuthProvider>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <PublicDashboard />
                   </div>
                 </PublicAuthProvider>
@@ -146,10 +169,8 @@ const App = () => {
               <Route path="schemes" element={<SchemesView />} />
               <Route path="transactions" element={<PublicTransactionHistory />} />
               <Route path="reports" element={<ReportDownload />} />
-              {/* Auth routes */}
               <Route path="signin" element={<PublicSignIn />} />
               <Route path="signup" element={<PublicSignUp />} />
-              {/* Protected routes */}
               <Route
                 path="grievance"
                 element={
@@ -168,40 +189,6 @@ const App = () => {
               />
             </Route>
 
-            {/* Home route */}
-            <Route path="/" element={
-              <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center max-w-2xl">
-                  <h1 className="text-4xl font-bold mb-4 text-gray-800">Welcome to Transparent Fund Tracker</h1>
-                  <p className="text-gray-600 mb-8">Promoting transparency and accountability in public fund management</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Link
-                      to="/public/schemes"
-                      className="bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition text-lg font-semibold shadow-md"
-                    >
-                      👁️ Public Portal<br/>
-                      {/* <span className="text-sm font-normal">Module 3</span> */}
-                    </Link>
-                    <Link
-                      to="/utilization/requests"
-                      className="bg-green-600 text-white px-6 py-4 rounded-lg hover:bg-green-700 transition text-lg font-semibold shadow-md"
-                    >
-                      📋 Fund Utilization<br/>
-                      {/* <span className="text-sm font-normal">Module 2</span> */}
-                    </Link>
-                    <Link
-                      to="/admin"
-                      className="bg-blue-600 text-white px-6 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold shadow-md"
-                    >
-                      🔐 Admin Portal<br/>
-                      {/* <span className="text-sm font-normal">Module 1</span> */}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            } />
-            
-            {/* Default redirect - if path doesn't match, redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -210,5 +197,25 @@ const App = () => {
   );
 };
 
-export default App;
+/* ================= SMALL COMPONENTS ================= */
 
+const NavLink = ({ to, children }) => (
+  <Link
+    to={to}
+    className="px-3 py-2 rounded hover:bg-white hover:bg-opacity-20 transition"
+  >
+    {children}
+  </Link>
+);
+
+const MobileLink = ({ to, children, setMenuOpen }) => (
+  <Link
+    to={to}
+    onClick={() => setMenuOpen(false)}
+    className="block px-3 py-2 rounded text-white hover:bg-white hover:bg-opacity-20 transition"
+  >
+    {children}
+  </Link>
+);
+
+export default App;

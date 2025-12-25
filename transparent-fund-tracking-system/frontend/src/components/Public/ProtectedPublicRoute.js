@@ -5,26 +5,27 @@ import { usePublicAuth } from "../../context/PublicAuthContext";
 const ProtectedPublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = usePublicAuth();
 
-  // Show loading while checking authentication
+  // Loading screen (fully responsive)
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-          <p className="mt-2 text-gray-600">Verifying authentication...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-md text-center w-full max-w-sm">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+          <p className="text-sm sm:text-base text-gray-700">
+            Verifying authentication…
+          </p>
         </div>
       </div>
     );
   }
 
-  // Allow access if authenticated
+  // Authenticated → allow access
   if (isAuthenticated) {
     return children;
   }
 
-  // Otherwise redirect to sign in
+  // Not authenticated → redirect
   return <Navigate to="/public/signin" replace />;
 };
 
 export default ProtectedPublicRoute;
-

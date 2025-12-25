@@ -5,6 +5,7 @@ import { usePublicAuth } from "../../context/PublicAuthContext";
 const PublicSignIn = () => {
   const navigate = useNavigate();
   const { login } = usePublicAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,10 +14,7 @@ const PublicSignIn = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -47,7 +45,10 @@ const PublicSignIn = () => {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.response?.data?.error || error.message || "Sign in failed",
+        text:
+          error.response?.data?.error ||
+          error.message ||
+          "Sign in failed",
       });
     } finally {
       setLoading(false);
@@ -55,20 +56,23 @@ const PublicSignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-purple-700">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 sm:p-8">
+
+        {/* HEADER */}
+        <div className="text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-purple-700">
             Public Portal Sign In
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to access your grievance reports and track status
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
+            Access grievance reports and track status
           </p>
         </div>
 
+        {/* MESSAGE */}
         {message.text && (
           <div
-            className={`p-4 rounded ${
+            className={`mt-4 p-3 rounded text-sm ${
               message.type === "success"
                 ? "bg-green-100 text-green-800 border border-green-400"
                 : "bg-red-100 text-red-800 border border-red-400"
@@ -78,63 +82,63 @@ const PublicSignIn = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+        {/* FORM */}
+        <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
 
+          {/* EMAIL */}
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
+            <label className="block text-sm font-medium text-gray-700">
+              Email Address
+            </label>
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              placeholder="example@email.com"
+            />
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link
-                to="/public/signup"
-                className="font-medium text-purple-600 hover:text-purple-500"
-              >
-                Sign up
-              </Link>
-            </p>
+          {/* PASSWORD */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              className="mt-1 w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              placeholder="••••••••"
+            />
           </div>
+
+          {/* BUTTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 transition focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+
+          {/* FOOTER */}
+          <p className="text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/public/signup"
+              className="font-semibold text-purple-600 hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+
         </form>
       </div>
     </div>
@@ -142,4 +146,3 @@ const PublicSignIn = () => {
 };
 
 export default PublicSignIn;
-

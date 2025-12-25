@@ -4,11 +4,12 @@ import { fetchPublicSchemes } from "../../services/publicApi";
 const SchemesView = () => {
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [filters, setFilters] = useState({
     search: "",
     schemeId: "",
     minBudget: "",
-    maxBudget: ""
+    maxBudget: "",
   });
 
   const loadSchemes = useCallback(async () => {
@@ -27,135 +28,122 @@ const SchemesView = () => {
     loadSchemes();
   }, [loadSchemes]);
 
-  const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handleChange = (e) =>
+    setFilters({ ...filters, [e.target.name]: e.target.value });
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  if (loading) {
-    return <div className="text-center py-8">Loading schemes...</div>;
-  }
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleDateString("en-IN") : "-";
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-purple-700">Active Schemes & Budgets</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          <input
-            type="text"
-            name="search"
-            value={filters.search}
-            onChange={handleFilterChange}
-            placeholder="Search by scheme name..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Scheme ID</label>
-          <input
-            type="number"
-            name="schemeId"
-            value={filters.schemeId}
-            onChange={handleFilterChange}
-            placeholder="Scheme ID"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Min Budget (₹)</label>
-          <input
-            type="number"
-            name="minBudget"
-            value={filters.minBudget}
-            onChange={handleFilterChange}
-            placeholder="Minimum"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Max Budget (₹)</label>
-          <input
-            type="number"
-            name="maxBudget"
-            value={filters.maxBudget}
-            onChange={handleFilterChange}
-            placeholder="Maximum"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
+      {/* HEADER */}
+      <h2 className="text-2xl sm:text-3xl font-bold text-purple-700">
+        Active Schemes & Budgets
+      </h2>
+
+      {/* FILTERS */}
+      <div className="bg-white p-4 rounded-lg shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Input
+          label="Search"
+          name="search"
+          value={filters.search}
+          onChange={handleChange}
+          placeholder="Scheme name"
+        />
+        <Input
+          label="Scheme ID"
+          name="schemeId"
+          type="number"
+          value={filters.schemeId}
+          onChange={handleChange}
+          placeholder="ID"
+        />
+        <Input
+          label="Min Budget (₹)"
+          name="minBudget"
+          type="number"
+          value={filters.minBudget}
+          onChange={handleChange}
+          placeholder="Minimum"
+        />
+        <Input
+          label="Max Budget (₹)"
+          name="maxBudget"
+          type="number"
+          value={filters.maxBudget}
+          onChange={handleChange}
+          placeholder="Maximum"
+        />
       </div>
 
-      {/* Schemes Grid */}
-      {schemes.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 bg-white rounded-lg shadow-md">
+      {/* CONTENT */}
+      {loading ? (
+        <div className="text-center py-10">
+          <div className="animate-spin h-8 w-8 border-b-2 border-purple-600 rounded-full mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading schemes…</p>
+        </div>
+      ) : schemes.length === 0 ? (
+        <div className="bg-white p-6 rounded shadow text-center text-gray-500">
           No schemes found
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {schemes.map((scheme) => (
-            <div key={scheme.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{scheme.name}</h3>
-                <span className="text-sm text-gray-500">ID: {scheme.id}</span>
+            <div
+              key={scheme.id}
+              className="bg-white rounded-xl shadow p-5 hover:shadow-lg transition flex flex-col"
+            >
+              {/* HEADER */}
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                  {scheme.name}
+                </h3>
+                <span className="text-xs text-gray-500">
+                  ID: {scheme.id}
+                </span>
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Total Budget</label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    ₹{scheme.totalFunds.toLocaleString()}
-                  </p>
-                </div>
+              {/* FUNDS */}
+              <div className="space-y-3 flex-1">
+                <Stat label="Total Budget" value={`₹${scheme.totalFunds.toLocaleString()}`} />
+                <Stat label="Used Funds" value={`₹${scheme.usedFunds.toLocaleString()}`} color="text-orange-600" />
+                <Stat label="Remaining Funds" value={`₹${scheme.remainingFunds.toLocaleString()}`} color="text-green-600" />
 
+                {/* UTILIZATION */}
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Used Funds</label>
-                  <p className="text-lg font-semibold text-orange-600">
-                    ₹{scheme.usedFunds.toLocaleString()}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Remaining Funds</label>
-                  <p className="text-lg font-semibold text-green-600">
-                    ₹{scheme.remainingFunds.toLocaleString()}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Utilization</label>
-                  <div className="mt-1">
-                    <div className="flex justify-between text-sm mb-1">
+                  <label className="text-sm font-medium text-gray-500">
+                    Utilization
+                  </label>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs mb-1">
                       <span>{scheme.utilizationPercentage}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-purple-600 h-2 rounded-full transition-all"
+                        className="bg-purple-600 h-2 rounded-full"
                         style={{ width: `${scheme.utilizationPercentage}%` }}
-                      ></div>
+                      />
                     </div>
                   </div>
                 </div>
 
+                {/* ELIGIBILITY */}
                 {scheme.eligibilityCriteria && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Eligibility</label>
-                    <p className="text-sm text-gray-700 mt-1">{scheme.eligibilityCriteria}</p>
+                    <label className="text-sm font-medium text-gray-500">
+                      Eligibility
+                    </label>
+                    <p className="text-sm text-gray-700 mt-1">
+                      {scheme.eligibilityCriteria}
+                    </p>
                   </div>
                 )}
+              </div>
 
-                <div className="pt-2 border-t text-xs text-gray-400">
-                  Created: {formatDate(scheme.createdAt)}
-                </div>
+              {/* FOOTER */}
+              <div className="pt-3 mt-4 border-t text-xs text-gray-400">
+                Created: {formatDate(scheme.createdAt)}
               </div>
             </div>
           ))}
@@ -165,5 +153,25 @@ const SchemesView = () => {
   );
 };
 
-export default SchemesView;
+/* ===== REUSABLE COMPONENTS ===== */
 
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
+    <input
+      {...props}
+      className="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+    />
+  </div>
+);
+
+const Stat = ({ label, value, color = "text-gray-900" }) => (
+  <div>
+    <label className="text-sm font-medium text-gray-500">{label}</label>
+    <p className={`text-lg font-semibold ${color}`}>{value}</p>
+  </div>
+);
+
+export default SchemesView;

@@ -5,6 +5,7 @@ import { useUtilizationAuth } from "../../context/UtilizationAuthContext";
 const SignUp = () => {
   const navigate = useNavigate();
   const { register } = useUtilizationAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,27 +16,31 @@ const SignUp = () => {
     phone: "",
     address: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (!formData.email || !formData.password || !formData.fullName || !formData.organization) {
-      setMessage({ type: "error", text: "Please fill in all required fields!" });
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.fullName ||
+      !formData.organization
+    ) {
+      setMessage({ type: "error", text: "Please fill all required fields!" });
       return;
     }
 
     if (formData.password.length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters long!" });
+      setMessage({
+        type: "error",
+        text: "Password must be at least 6 characters!",
+      });
       return;
     }
 
@@ -65,14 +70,17 @@ const SignUp = () => {
         });
         setTimeout(() => {
           navigate("/utilization/requests", { replace: true });
-        }, 1500);
+        }, 1200);
       } else {
         setMessage({ type: "error", text: result.error });
       }
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.response?.data?.error || error.message || "Registration failed",
+        text:
+          error.response?.data?.error ||
+          error.message ||
+          "Registration failed",
       });
     } finally {
       setLoading(false);
@@ -80,20 +88,23 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-green-700">
-            Create Account
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 sm:p-8">
+
+        {/* HEADER */}
+        <div className="text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-green-700">
+            Create Utilization Account
           </h2>
-          {/* <p className="mt-2 text-center text-sm text-gray-600">
-            Fund Utilization Portal - Module 2
-          </p> */}
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
+            Register to submit fund utilization requests
+          </p>
         </div>
 
+        {/* MESSAGE */}
         {message.text && (
           <div
-            className={`p-4 rounded ${
+            className={`mt-4 p-3 rounded text-sm ${
               message.type === "success"
                 ? "bg-green-100 text-green-800 border border-green-400"
                 : "bg-red-100 text-red-800 border border-red-400"
@@ -103,147 +114,71 @@ const SignUp = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
+          <Input label="Full Name *" name="fullName" value={formData.fullName} onChange={handleChange} />
+          <Input label="Email *" type="email" name="email" value={formData.email} onChange={handleChange} />
+          <Input label="Organization *" name="organization" value={formData.organization} onChange={handleChange} placeholder="Department / Agency" />
+          <Input label="Designation" name="designation" value={formData.designation} onChange={handleChange} />
+          <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXXXXX" />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Organization <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="organization"
-                value={formData.organization}
-                onChange={handleChange}
-                required
-                placeholder="Your organization/agency name"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
+          <Textarea label="Address" name="address" value={formData.address} onChange={handleChange} />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Designation
-              </label>
-              <input
-                type="text"
-                name="designation"
-                value={formData.designation}
-                onChange={handleChange}
-                placeholder="Your designation/role"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
+          <Input label="Password *" type="password" name="password" value={formData.password} onChange={handleChange} />
+          <Input label="Confirm Password *" type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Phone
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+91 1234567890"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
+          {/* BUTTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-50"
+          >
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <textarea
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                rows="2"
-                placeholder="Your address"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength="6"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-              <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Confirm Password <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          {/* FOOTER */}
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/utilization/signin"
+              className="font-semibold text-green-600 hover:underline"
             >
-              {loading ? "Creating Account..." : "Sign Up"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link to="/utilization/signin" className="font-medium text-green-600 hover:text-green-500">
-                Sign In
-              </Link>
-            </p>
-          </div>
+              Sign In
+            </Link>
+          </p>
         </form>
       </div>
     </div>
   );
 };
 
-export default SignUp;
+/* ===== REUSABLE COMPONENTS ===== */
 
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
+    <input
+      {...props}
+      required={label.includes("*")}
+      className="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+    />
+  </div>
+);
+
+const Textarea = ({ label, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
+    <textarea
+      {...props}
+      rows="2"
+      className="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+    />
+  </div>
+);
+
+export default SignUp;

@@ -5,19 +5,17 @@ import { useUtilizationAuth } from "../../context/UtilizationAuthContext";
 const SignIn = () => {
   const navigate = useNavigate();
   const { login } = useUtilizationAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +45,10 @@ const SignIn = () => {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.response?.data?.error || error.message || "Sign in failed",
+        text:
+          error.response?.data?.error ||
+          error.message ||
+          "Sign in failed",
       });
     } finally {
       setLoading(false);
@@ -55,20 +56,23 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-green-700">
-            Sign In
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 sm:p-8">
+
+        {/* HEADER */}
+        <div className="text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-green-700">
+            Utilization Portal Sign In
           </h2>
-          {/* <p className="mt-2 text-center text-sm text-gray-600">
-            Fund Utilization Portal - Module 2
-          </p> */}
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
+            Access fund utilization requests and tracking
+          </p>
         </div>
 
+        {/* MESSAGE */}
         {message.text && (
           <div
-            className={`p-4 rounded ${
+            className={`mt-4 p-3 rounded text-sm ${
               message.type === "success"
                 ? "bg-green-100 text-green-800 border border-green-400"
                 : "bg-red-100 text-red-800 border border-red-400"
@@ -78,57 +82,58 @@ const SignIn = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                placeholder="your@email.com"
-              />
-            </div>
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter your password"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {loading ? "Signing In..." : "Sign In"}
-            </button>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+              className="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/utilization/signup" className="font-medium text-green-600 hover:text-green-500">
-                Sign Up
-              </Link>
-            </p>
-          </div>
+          {/* BUTTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-50"
+          >
+            {loading ? "Signing In..." : "Sign In"}
+          </button>
+
+          {/* FOOTER */}
+          <p className="text-center text-sm text-gray-600">
+            Don’t have an account?{" "}
+            <Link
+              to="/utilization/signup"
+              className="font-semibold text-green-600 hover:underline"
+            >
+              Sign Up
+            </Link>
+          </p>
         </form>
       </div>
     </div>
@@ -136,4 +141,3 @@ const SignIn = () => {
 };
 
 export default SignIn;
-
