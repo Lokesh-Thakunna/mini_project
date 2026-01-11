@@ -151,3 +151,30 @@ node server.js
 ---
 
 If you want help creating a small script or a hosting-specific guide (Render, DigitalOcean, or Netlify + Render combo), tell me which provider and I'll add tailored steps.
+
+---
+
+## Vercel Deployment (Frontend)
+
+Recommended: host the frontend on Vercel and the backend on Render/Render-like service. This avoids converting the Express API to serverless functions.
+
+1. Push your repo to GitHub.
+2. In the Vercel dashboard, import the project from GitHub and select the `frontend/` directory as the root (or connect the monorepo and set root to `frontend`).
+3. Set Environment Variables in Vercel → Settings → Environment Variables:
+	- `REACT_APP_API_URL` = `https://<YOUR_BACKEND_DOMAIN>` (if you want the frontend to call backend directly), or leave blank if backend is served from same origin.
+4. Build & Output:
+	- Build Command: `npm run build`
+	- Output Directory: `build`
+5. Optionally add a `vercel.json` in `frontend/` to rewrite `/api/*` to your backend domain. Example `frontend/vercel.json`:
+
+```json
+{
+  "version": 2,
+  "builds": [{ "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }],
+  "rewrites": [{ "source": "/api/(.*)", "destination": "https://<YOUR_BACKEND_DOMAIN>/api/$1" }]
+}
+```
+
+6. Deploy — Vercel will build and publish the frontend. If you used rewrites to a backend on Render, the frontend can call `/api/*` and Vercel will proxy requests to the backend.
+
+If you want, I can: (A) add the `vercel.json` under `frontend/` and update `.gitignore`, (B) prepare a Render deploy guide for the backend, or (C) attempt to refactor the backend to Vercel serverless functions (more involved). Which one do you want next?
