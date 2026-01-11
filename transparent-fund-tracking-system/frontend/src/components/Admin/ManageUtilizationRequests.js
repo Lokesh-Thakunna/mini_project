@@ -125,7 +125,7 @@ const ManageUtilizationRequests = () => {
 
   const getFileUrl = (filePath) => {
     if (!filePath) return null;
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
     return `${apiUrl}/${filePath}`;
   };
 

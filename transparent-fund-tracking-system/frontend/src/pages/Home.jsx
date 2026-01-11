@@ -125,27 +125,14 @@ const Home = () => {
 /* ================= COMPONENTS ================= */
 
 const StatCard = ({ title, value }) => (
-<div className="
-  bg-gradient-to-br from-blue-400 via-green-400 to-purple-400
-  hover:bg-gradient-to-br hover:from-blue-800 hover:via-green-800 hover:to-purple-800
-
-  border border-blue-200
-  rounded-xl p-6
-
-  shadow-sm hover:shadow-md
-  transition-all duration-300
-
-  text-center
-">
-
-
+<div className="bg-purple-100 hover:bg-purple-200 border-blue-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center">
         <p className="text-xl font-bold-mt-1 text-black-900">{title}</p>
         <h3 className="text-2xl font-bold mt-2 text-gray-800">{value}</h3>
     </div>
 );
 
 const WorkStep = ({ step, title, image }) => (
-<div className=" bg-gradient-to-br from-blue-400 via-green-400 to-purple-400 rounded-xl p-8 shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-500 text-center text-gray-900 hover:text-white">
+<div className="bg-purple-100 hover:bg-purple-200 border-blue-200 rounded-xl p-8 shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-500 text-center text-gray-900 hover:text-white">
 
         <img
             src={image}
@@ -162,7 +149,8 @@ const WorkStep = ({ step, title, image }) => (
 );
 
 const FeatureCard = ({ title, image }) => (
-<div className=" bg-gradient-to-br from-blue-400 via-green-400 to-purple-400 border-blue-200 rounded-xl p-8 shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-500 text-center text-gray-900 hover:text-white">
+<div className="  bg-purple-100
+  hover:bg-purple-200 border-blue-200 rounded-xl p-8 shadow-sm transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02] hover:border-blue-500 text-center text-gray-900 hover:text-white">
         
         <img
             src={image}

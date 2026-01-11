@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken } from "./authApi";
 
-const API_BASE = `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/utilization`;
+const API_BASE = `${process.env.REACT_APP_API_URL || window.location.origin}/api/utilization`;
 
 // Create axios instance with auth interceptor
 const api = axios.create({

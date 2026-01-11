@@ -11,14 +11,30 @@ const DEFAULT_MONGO_URI = "mongodb://127.0.0.1:27017/fundtracker";
 const app = express();
 
 // -------------------------------------------
-// CORS CONFIG (Netlify + Localhost)
+// CORS CONFIG (env-configurable)
+// - Set CORS_ORIGIN env var as comma-separated list or '*' to allow all
+// - Example: CORS_ORIGIN="http://example.com,http://localhost:3000"
 // -------------------------------------------
+const rawCors = process.env.CORS_ORIGIN;
+let allowedOrigins;
+if (rawCors) {
+  allowedOrigins = rawCors === "*" ? "*" : rawCors.split(",").map((s) => s.trim());
+} else {
+  allowedOrigins = [
+    "https://stalwart-profiterole-2fea66.netlify.app",
+    "http://localhost:3000",
+  ];
+}
+
 app.use(
   cors({
-    origin: [
-      "https://stalwart-profiterole-2fea66.netlify.app", // Your Netlify frontend
-      "http://localhost:3000" // Local development
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins === "*") return callback(null, true);
+      if (Array.isArray(allowedOrigins) && allowedOrigins.indexOf(origin) !== -1)
+        return callback(null, true);
+      return callback(new Error("CORS: Origin not allowed"), false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
@@ -101,9 +117,22 @@ app.use((req, res) => {
 });
 
 // -------------------------------------------
-// START SERVER
+// Optionally serve frontend build when requested
+// Set SERVE_FRONTEND=true to serve frontend/build from the backend
 // -------------------------------------------
+if (process.env.SERVE_FRONTEND === "true") {
+  const frontendBuild = path.join(__dirname, "..", "frontend", "build");
+  app.use(express.static(frontendBuild));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendBuild, "index.html"));
+  });
+}
+
+// -------------------------------------------
+// START SERVER (bind to HOST so LAN access works)
+// -------------------------------------------
+const HOST = process.env.HOST || "0.0.0.0";
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
 });

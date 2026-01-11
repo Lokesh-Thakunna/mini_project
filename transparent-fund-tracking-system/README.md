@@ -114,3 +114,40 @@ The system follows a  **modular architecture** :
 3. Utilization officer requests fund usage
 4. Approval updates are logged
 5. Public users can view fund utilization details.
+
+---
+
+## 🚀 Deployment (run on a server or another machine)
+
+Follow these steps to make the app reachable from other machines on the network or a server:
+
+- **Backend env vars:** create a `.env` in `backend/` or set env vars in your host:
+	- `PORT` (default `5000`)
+	- `HOST` (optional — defaults to `0.0.0.0` to allow LAN access)
+	- `CORS_ORIGIN` (comma-separated origins or `*` to allow all)
+	- `MONGO_URI` (your MongoDB connection string)
+	- `SERVE_FRONTEND=true` to let the backend serve the built frontend from `frontend/build`.
+
+- **Frontend:** set the API base at build time (optional). If your frontend is served from the same host as the backend, no extra step is required. To point the frontend to a different backend, set:
+	- `REACT_APP_API_URL` (e.g. `https://api.example.com`)
+
+- **Build & run (example single-server deploy):**
+
+```powershell
+cd frontend
+npm install
+npm run build
+
+cd ../backend
+npm install
+setx PORT 5000
+setx HOST 0.0.0.0
+setx SERVE_FRONTEND true
+node server.js
+```
+
+- You can now access the site from another machine using `http://<server-ip>:5000` (or your configured port).
+
+---
+
+If you want help creating a small script or a hosting-specific guide (Render, DigitalOcean, or Netlify + Render combo), tell me which provider and I'll add tailored steps.
