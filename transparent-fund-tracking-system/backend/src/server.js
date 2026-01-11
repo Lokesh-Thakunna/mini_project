@@ -1,10 +1,13 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const path = require("path");
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import { createRequire } from "module";
 
 dotenv.config();
+const require = createRequire(import.meta.url);
 
 const DEFAULT_MONGO_URI = "mongodb://127.0.0.1:27017/fundtracker";
 
@@ -12,18 +15,13 @@ const app = express();
 
 // -------------------------------------------
 // CORS CONFIG (env-configurable)
-// - Set CORS_ORIGIN env var as comma-separated list or '*' to allow all
-// - Example: CORS_ORIGIN="http://example.com,http://localhost:3000"
 // -------------------------------------------
 const rawCors = process.env.CORS_ORIGIN;
 let allowedOrigins;
 if (rawCors) {
   allowedOrigins = rawCors === "*" ? "*" : rawCors.split(",").map((s) => s.trim());
 } else {
-  allowedOrigins = [
-    "https://stalwart-profiterole-2fea66.netlify.app",
-    "http://localhost:3000",
-  ];
+  allowedOrigins = ["http://localhost:3000"];
 }
 
 app.use(
@@ -45,17 +43,23 @@ app.use(express.json());
 // -------------------------------------------
 // Static Uploads
 // -------------------------------------------
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // -------------------------------------------
-// API ROUTES
+// API ROUTES (CommonJS modules via createRequire)
 // -------------------------------------------
-app.use("/api/fund", require("./routes/fund"));
-app.use("/api/transactions", require("./routes/transactionRoutes"));
-app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/utilization", require("./routes/utilizationRoutes"));
-app.use("/api/public", require("./routes/publicRoutes"));
-app.use("/api/auth", require("./routes/authRoutes"));
+try {
+  app.use("/api/fund", require("../routes/fund"));
+  app.use("/api/transactions", require("../routes/transactionRoutes"));
+  app.use("/api/admin", require("../routes/adminRoutes"));
+  app.use("/api/utilization", require("../routes/utilizationRoutes"));
+  app.use("/api/public", require("../routes/publicRoutes"));
+  app.use("/api/auth", require("../routes/authRoutes"));
+} catch (err) {
+  console.warn("Warning: some routes could not be loaded:", err.message);
+}
 
 // -------------------------------------------
 // MongoDB NORMALIZED CONNECTION
@@ -72,7 +76,6 @@ const normalizeMongoUri = (rawUri) => {
 
   let value = rawUri.trim();
 
-  // If user enters only DB name (example: fundtracker)
   if (!value.startsWith("mongodb://") && !value.startsWith("mongodb+srv://")) {
     const dbName = value.replace(/^\/+/, "") || "fundtracker";
     return `mongodb://127.0.0.1:27017/${dbName}`;
@@ -92,47 +95,41 @@ const normalizeMongoUri = (rawUri) => {
 
 const mongoUri = normalizeMongoUri(process.env.MONGO_URI);
 
-mongoose
-  .connect(mongoUri)
+// Connect to Mongo (cached connection for serverless environments)
+let cached = global._mongoosePromise; // eslint-disable-line no-underscore-dangle
+if (!cached) {
+  cached = mongoose.connect(mongoUri).then(() => mongoose);
+  global._mongoosePromise = cached; // eslint-disable-line no-underscore-dangle
+}
+
+cached
   .then(() => {
-    console.log("✅ MongoDB Connected Successfully");
-    console.log("📊 Database:", mongoose.connection.db.databaseName);
+    try {
+      console.log("✅ MongoDB Connected Successfully");
+      console.log("📊 Database:", mongoose.connection.db.databaseName);
+    } catch (e) {
+      // ignore when running in serverless cold starts
+    }
   })
   .catch((err) => {
     console.error("❌ MongoDB Connection Error:", err.message);
   });
 
 // -------------------------------------------
-// REMOVE FRONTEND SERVING (Netlify handles it)
+// Root handler — must return JSON on GET /
 // -------------------------------------------
 app.get("/", (req, res) => {
-  res.send("Backend API Running Successfully 🚀");
+  res.json({ success: true, message: "Backend API Running Successfully 🚀" });
 });
 
 // -------------------------------------------
-// 404 Handler (REPLACES app.get('*'))
+// 404 Handler
 // -------------------------------------------
 app.use((req, res) => {
   res.status(404).json({ message: "API Route Not Found" });
 });
 
 // -------------------------------------------
-// Optionally serve frontend build when requested
-// Set SERVE_FRONTEND=true to serve frontend/build from the backend
+// Export the Express app as default (no app.listen)
 // -------------------------------------------
-if (process.env.SERVE_FRONTEND === "true") {
-  const frontendBuild = path.join(__dirname, "..", "frontend", "build");
-  app.use(express.static(frontendBuild));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendBuild, "index.html"));
-  });
-}
-
-// -------------------------------------------
-// START SERVER (bind to HOST so LAN access works)
-// -------------------------------------------
-const HOST = process.env.HOST || "0.0.0.0";
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
-});
+export default app;
